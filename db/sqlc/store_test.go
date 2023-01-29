@@ -8,17 +8,24 @@ import (
 
 	"testing"
 
+	"github.com/shunbiao/simplebank/util"
 	"github.com/stretchr/testify/require"
 )
 
-func TestTranferTx(t *testing.T) {
-
-	var err error
-	testDB, err := sql.Open(dbDrive, dbSource)
+func dbConnection() *sql.DB {
+	config, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("connot load config:", err)
+	}
+	testDB, err := sql.Open(config.DBDrive, config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
+	return testDB
+}
+func TestTranferTx(t *testing.T) {
 
+	testDB := dbConnection()
 	store := NewStore(testDB)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
@@ -126,12 +133,7 @@ func TestTranferTx(t *testing.T) {
 
 func TestTranferTxDeadlock(t *testing.T) {
 
-	var err error
-	testDB, err := sql.Open(dbDrive, dbSource)
-	if err != nil {
-		log.Fatal("cannot connect to db:", err)
-	}
-
+	testDB := dbConnection()
 	store := NewStore(testDB)
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
